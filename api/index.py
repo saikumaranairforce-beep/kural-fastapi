@@ -4,7 +4,11 @@ import json
 import random
 import os
 
-app = FastAPI()
+
+
+app = FastAPI(root_path="/api")
+
+
 
 # ✅ Enable CORS (for your GitHub site later)
 app.add_middleware(
