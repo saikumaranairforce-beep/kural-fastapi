@@ -1,7 +1,7 @@
 [
     {
-      "Number": 1,
-      "Line1": "அகர முதல எழுத்தெல்லாம் ஆதி",
+      "id": 1,
+      "tamil": "அகர முதல எழுத்தெல்லாம் ஆதி",
       "Line2": "பகவன் முதற்றே உலகு.",
       "Translation": "'A' leads letters; the Ancient Lord Leads and lords the entire world",
       "mv": "எழுத்துக்கள் எல்லாம் அகரத்தை அடிப்படையாக கொண்டிருக்கின்றன. அதுபோல உலகம் கடவுளை அடிப்படையாக கொண்டிருக்கிறது.",
@@ -16,8 +16,8 @@
       "athikaram_tamil": "கடவுள் வாழ்த்து"
     },
     {
-      "Number": 2,
-      "Line1": "கற்றதனால் ஆய பயனென்கொல் வாலறிவன்",
+      "id": 2,
+      "tamil": "கற்றதனால் ஆய பயனென்கொல் வாலறிவன்",
       "Line2": "நற்றாள் தொழாஅர் எனின்.",
       "Translation": "That lore is vain which does not fall  At His good feet who knoweth all",
       "couplet": "No fruit have men of all their studied lore,Save they the 'Purely Wise One's' feet adore",
@@ -32,8 +32,8 @@
       "athikaram_tamil": "கடவுள் வாழ்த்து"
     },
     {
-      "Number": 3,
-      "Line1": "மலர்மிசை ஏகினான் மாணடி சேர்ந்தார்",
+      "id": 3,
+      "tamil": "மலர்மிசை ஏகினான் மாணடி சேர்ந்தார்",
       "Line2": "நிலமிசை நீடுவாழ் வார்.",
       "Translation": "Long they live on earth who gain The feet of God in florid brain",
       "mv": "அன்பரின் அகமாகிய மலரில் வீற்றிருக்கும் கடவுளின் சிறந்த திருவடிகளை பொருந்தி நினைக்கின்றவர், இன்ப உலகில் நிலைத்து வாழ்வார்",
@@ -48,8 +48,8 @@
       "athikaram_tamil": "கடவுள் வாழ்த்து"
     },
     {
-      "Number": 4,
-      "Line1": "வேண்டுதல் வேண்டாமை இலானடி சேர்ந்தார்க்கு",
+      "id": 4,
+      "tamil": "வேண்டுதல் வேண்டாமை இலானடி சேர்ந்தார்க்கு",
       "Line2": "யாண்டும் இடும்பை இல.",
       "Translation": "Who hold His feet who likes nor loathes Are free from woes of human births",
       "mv": "விருப்பு வெறுப்பு இல்லாத கடவுளின் திருவடிகளை பொருந்தி நினைக்கின்றவர்க்கு எப்போதும் எவ்விடத்திலும் துன்பம் இல்லை",
@@ -64,8 +64,8 @@
       "athikaram_tamil": "கடவுள் வாழ்த்து"
     },
     {
-      "Number": 5,
-      "Line1": "இருள்சேர் இருவினையும் சேரா இறைவன்",
+      "id": 5,
+      "tamil": "இருள்சேர் இருவினையும் சேரா இறைவன்",
       "Line2": "பொருள்சேர் புகழ்புரிந்தார் மாட்டு.",
       "Translation": "God's praise who tell, are free from right  And wrong, the twins of dreaming night",
       "mv": "கடவுளின் உண்மைப் புகழை விரும்பி அன்பு செலுத்துகின்றவரிடம் அறியாமையால் விளையும் இருவகை வினையும் சேர்வதில்லை",
@@ -80,8 +80,8 @@
       "athikaram_tamil": "கடவுள் வாழ்த்து"
     },
     {
-      "Number": 6,
-      "Line1": "பொறிவாயில் ஐந்தவித்தான் பொய்தீர் ஒழுக்க",
+      "id": 6,
+      "tamil": "பொறிவாயில் ஐந்தவித்தான் பொய்தீர் ஒழுக்க",
       "Line2": "நெறிநின்றார் நீடுவாழ் வார்.",
       "Translation": "They prosper long who walk His way Who has the senses signed away",
       "mv": "ஐம்பொறி வாயிலாக பிறக்கும் வேட்கைகளை அவித்த இறைவனுடைய பொய்யற்ற ஒழுக்க நெறியில் நின்றவர், நிலை பெற்ற நல்வாழ்க்கை வாழ்வர்",
@@ -96,8 +96,8 @@
       "athikaram_tamil": "கடவுள் வாழ்த்து"
     },
     {
-      "Number": 7,
-      "Line1": "தனக்குவமை இல்லாதான் தாள்சேர்ந்தார்க் கல்லால்",
+      "id": 7,
+      "tamil": "தனக்குவமை இல்லாதான் தாள்சேர்ந்தார்க் கல்லால்",
       "Line2": "மனக்கவலை மாற்றல் அரிது.",
       "Translation": "His feet, whose likeness none can find, Alone can ease the anxious mind",
       "mv": "தனக்கு ஒப்புமை இல்லாத தலைவனுடைய திருவடிகளைப் பொருந்தி நினைக்கின்றவர் அல்லாமல், மற்றவர்க்கு மனக்கவலையை மாற்ற முடியாது",
