@@ -67,6 +67,19 @@ def validate_api_key(api_key: str):
     }).eq("api_key", api_key).execute()
 
     return user
+@app.get("/test-db")
+def test_db():
+    try:
+        res = supabase.table("api_keys").select("*").limit(1).execute()
+        return {
+            "status": "success",
+            "data": res.data
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": str(e)
+        }
 
 # 🏠 Home
 @app.get("/")
