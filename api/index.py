@@ -104,6 +104,7 @@ def test_db():
 
 @app.get("/debug-env")
 def debug_env():
+    import os
     return {
         "url": os.getenv("SUPABASE_URL"),
         "key_exists": os.getenv("SUPABASE_KEY") is not None
