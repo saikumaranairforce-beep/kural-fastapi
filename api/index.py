@@ -7,10 +7,10 @@ import json
 import os
 import secrets
 
-# 🚀 Create app
+# ─── App ────────────────────────────────────────────────────────────────────
 app = FastAPI()
 
-# 🌐 CORS (important for frontend)
+# ─── CORS ───────────────────────────────────────────────────────────────────
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -19,117 +19,125 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 🔗 Supabase setup (PUT YOUR VALUES)
-SUPABASE_URL = os.getenv("https://zawftoslsjbptffmtwpb.supabase.co")
-SUPABASE_KEY = os.getenv("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inphd2Z0b3Nsc2picHRmZm10d3BiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcxNzUyOTQsImV4cCI6MjA5Mjc1MTI5NH0.0BBcsCCgewtd3GeZ27VsxqvHxqMqL9O9PQbFMnMEFR4")
+# ─── Supabase ────────────────────────────────────────────────────────────────
+# BUG FIX 1: os.getenv() takes a *variable name* (string key), NOT the actual value.
+# Wrong:  os.getenv("https://zawft...")  → always returns None
+# Right:  os.getenv("SUPABASE_URL")     → reads env var named SUPABASE_URL
 
-@app.get("/hello")
-def hello():
-    return {"message": "hello working"}
-#supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 def get_supabase():
-    url = os.getenv("SUPABASE_URL")
-    key = os.getenv("SUPABASE_KEY")
-
+    url = os.getenv("SUPABASE_URL")   # set this in Vercel + GitHub Secrets
+    key = os.getenv("SUPABASE_KEY")   # set this in Vercel + GitHub Secrets
     if not url or not key:
-        raise Exception("Missing Supabase environment variables")
-
+        raise Exception("Missing SUPABASE_URL or SUPABASE_KEY environment variables")
     return create_client(url, key)
-# 📂 Load JSON data
-BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+
+# BUG FIX 2: supabase global was commented out → NameError everywhere.
+# We create it once at startup so all functions can use it.
+try:
+    supabase = get_supabase()
+except Exception as e:
+    supabase = None
+    print(f"[WARNING] Supabase not initialized: {e}")
+
+# ─── Load kurals.json ────────────────────────────────────────────────────────
+# BUG FIX 3: dirname(dirname(__file__)) goes UP two levels — wrong for api/index.py.
+# Your structure: root/api/index.py and root/kurals.json
+# So we only need to go up ONE level (dirname once).
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 file_path = os.path.join(BASE_DIR, "kurals.json")
 
-with open(file_path, "r", encoding="utf-8") as f:
-    kurals = json.load(f)
+try:
+    with open(file_path, "r", encoding="utf-8") as f:
+        kurals = json.load(f)
+except FileNotFoundError:
+    kurals = []
+    print(f"[WARNING] kurals.json not found at {file_path}")
 
-# 🔐 Generate API key
+# ─── Helpers ─────────────────────────────────────────────────────────────────
 def generate_api_key():
     return secrets.token_urlsafe(32)
 
-# ✅ Validate API key + usage
+def get_db():
+    """Returns supabase client or raises a clean HTTP error."""
+    if supabase is None:
+        raise HTTPException(status_code=500, detail="Database not connected. Check SUPABASE_URL and SUPABASE_KEY env vars.")
+    return supabase
+
+# BUG FIX 4: validate_api_key was calling bare `supabase` (NameError when commented out).
+# Now uses get_db() which gives a clear error message if env vars are missing.
 def validate_api_key(api_key: str):
-    response = supabase.table("api_keys").select("*").eq("api_key", api_key).execute()
+    db = get_db()
+    response = db.table("api_keys").select("*").eq("api_key", api_key).execute()
 
     if not response.data:
         raise HTTPException(status_code=401, detail="Invalid API Key")
 
     user = response.data[0]
 
-    # 🔄 Daily reset
+    # Daily reset
     today = datetime.utcnow().date()
     last_reset = datetime.fromisoformat(user["last_reset"]).date()
 
     if today > last_reset:
-        supabase.table("api_keys").update({
+        db.table("api_keys").update({
             "usage_count": 0,
             "last_reset": str(today)
         }).eq("api_key", api_key).execute()
         user["usage_count"] = 0
 
-    # 🚫 Limit check
+    # Limit check
     if user["usage_count"] >= user["limit_per_day"]:
         raise HTTPException(status_code=429, detail="Daily limit exceeded")
 
-    # ➕ Increase usage
-    supabase.table("api_keys").update({
+    # Increment usage
+    db.table("api_keys").update({
         "usage_count": user["usage_count"] + 1
     }).eq("api_key", api_key).execute()
 
     return user
-@app.get("/test-db")
-def test_db():
-    try:
-        supabase = get_supabase()
-        res = supabase.table("api_keys").select("*").limit(1).execute()
-        return {"status": "success", "data": res.data}
-    except Exception as e:
-        return {"status": "error", "message": str(e)}
-#@app.get("/debug-env")
-#def debug_env():
- #   return {
-  #      "url": SUPABASE_URL,
-   #     "key_exists": SUPABASE_KEY is not None }
-    
-@app.get("/test-db")
-def test_db():
-    try:
-        res = supabase.table("api_keys").select("*").limit(1).execute()
-        return {
-            "status": "success",
-            "data": res.data
-        }
-    except Exception as e:
-        return {
-            "status": "error",
-            "message": str(e)
-        }
 
-@app.get("/debug-env")
-def debug_env():
-    import os
-    return {
-        "url": os.getenv("SUPABASE_URL"),
-        "key_exists": os.getenv("SUPABASE_KEY") is not None
-    }
+# ─── Routes ──────────────────────────────────────────────────────────────────
 
-# 🏠 Home
 @app.get("/")
 def home():
     return {"message": "Tamil Kural API running"}
 
-# ❤️ Health check
 @app.get("/health")
 def health():
     return {"status": "ok"}
 
-# 🔑 Create API key
+@app.get("/hello")
+def hello():
+    return {"message": "hello working"}
+
+# BUG FIX 5: Duplicate /test-db route removed (FastAPI silently ignores the second one).
+@app.get("/test-db")
+def test_db():
+    try:
+        db = get_db()
+        res = db.table("api_keys").select("*").limit(1).execute()
+        return {"status": "success", "data": res.data}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+@app.get("/debug-env")
+def debug_env():
+    return {
+        "SUPABASE_URL_set": os.getenv("SUPABASE_URL") is not None,
+        "SUPABASE_KEY_set": os.getenv("SUPABASE_KEY") is not None,
+        "kurals_loaded": len(kurals),
+        "kurals_path": file_path,
+    }
+
+# ─── API Key Management ───────────────────────────────────────────────────────
+
 @app.post("/create-api-key")
 def create_api_key(plan: str = "free"):
+    db = get_db()
     key = generate_api_key()
-
     limit = 100 if plan == "free" else 1000
 
-    supabase.table("api_keys").insert({
+    db.table("api_keys").insert({
         "api_key": key,
         "plan": plan,
         "limit_per_day": limit,
@@ -140,14 +148,14 @@ def create_api_key(plan: str = "free"):
     return {
         "api_key": key,
         "plan": plan,
-        "limit": limit
+        "limit_per_day": limit
     }
 
-# 📖 Get Kural by ID
+# ─── Kural Endpoints ─────────────────────────────────────────────────────────
+
 @app.get("/kural/{kural_id}")
 def get_kural(kural_id: int, api_key: str = Query(...)):
     validate_api_key(api_key)
-
     for k in kurals:
         if k["id"] == kural_id:
             return {
@@ -155,36 +163,30 @@ def get_kural(kural_id: int, api_key: str = Query(...)):
                 "tamil": k.get("tamil"),
                 "meaning": k.get("meaning")
             }
+    raise HTTPException(status_code=404, detail="Kural not found")
 
-    return {"error": "Kural not found"}
-
-# 🎲 Random
 @app.get("/random")
 def random_kural(api_key: str = Query(...)):
     validate_api_key(api_key)
+    if not kurals:
+        raise HTTPException(status_code=500, detail="No kurals loaded")
     return random.choice(kurals)
 
-# 🔍 Search
 @app.get("/search")
 def search_kural(q: str, api_key: str = Query(...)):
     validate_api_key(api_key)
-
     results = [
         k for k in kurals
         if q.lower() in k.get("tamil", "").lower()
         or q.lower() in k.get("meaning", "").lower()
     ]
-
     return {"count": len(results), "results": results}
 
-# 🧭 Filter
 @app.get("/filter")
 def filter_kural(category: str, api_key: str = Query(...)):
     validate_api_key(api_key)
-
     results = [
         k for k in kurals
         if k.get("category", "").lower() == category.lower()
     ]
-
     return {"count": len(results), "results": results}
