@@ -23,7 +23,9 @@ app.add_middleware(
 SUPABASE_URL = os.getenv("https://zawftoslsjbptffmtwpb.supabase.co")
 SUPABASE_KEY = os.getenv("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inphd2Z0b3Nsc2picHRmZm10d3BiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcxNzUyOTQsImV4cCI6MjA5Mjc1MTI5NH0.0BBcsCCgewtd3GeZ27VsxqvHxqMqL9O9PQbFMnMEFR4")
 
-
+@app.get("/hello")
+def hello():
+    return {"message": "hello working"}
 #supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 def get_supabase():
     url = os.getenv("SUPABASE_URL")
