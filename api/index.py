@@ -24,8 +24,15 @@ SUPABASE_URL = os.getenv("https://zawftoslsjbptffmtwpb.supabase.co")
 SUPABASE_KEY = os.getenv("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inphd2Z0b3Nsc2picHRmZm10d3BiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcxNzUyOTQsImV4cCI6MjA5Mjc1MTI5NH0.0BBcsCCgewtd3GeZ27VsxqvHxqMqL9O9PQbFMnMEFR4")
 
 
-supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+#supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+def get_supabase():
+    url = os.getenv("SUPABASE_URL")
+    key = os.getenv("SUPABASE_KEY")
 
+    if not url or not key:
+        raise Exception("Missing Supabase environment variables")
+
+    return create_client(url, key)
 # 📂 Load JSON data
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 file_path = os.path.join(BASE_DIR, "kurals.json")
@@ -67,12 +74,19 @@ def validate_api_key(api_key: str):
     }).eq("api_key", api_key).execute()
 
     return user
-@app.get("/debug-env")
-def debug_env():
-    return {
-        "url": SUPABASE_URL,
-        "key_exists": SUPABASE_KEY is not None
-    }
+@app.get("/test-db")
+def test_db():
+    try:
+        supabase = get_supabase()
+        res = supabase.table("api_keys").select("*").limit(1).execute()
+        return {"status": "success", "data": res.data}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+#@app.get("/debug-env")
+#def debug_env():
+ #   return {
+  #      "url": SUPABASE_URL,
+   #     "key_exists": SUPABASE_KEY is not None }
     
 @app.get("/test-db")
 def test_db():
@@ -87,6 +101,13 @@ def test_db():
             "status": "error",
             "message": str(e)
         }
+
+@app.get("/debug-env")
+def debug_env():
+    return {
+        "url": os.getenv("SUPABASE_URL"),
+        "key_exists": os.getenv("SUPABASE_KEY") is not None
+    }
 
 # 🏠 Home
 @app.get("/")
