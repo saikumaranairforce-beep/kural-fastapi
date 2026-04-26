@@ -67,6 +67,13 @@ def validate_api_key(api_key: str):
     }).eq("api_key", api_key).execute()
 
     return user
+@app.get("/debug-env")
+def debug_env():
+    return {
+        "url": SUPABASE_URL,
+        "key_exists": SUPABASE_KEY is not None
+    }
+    
 @app.get("/test-db")
 def test_db():
     try:
