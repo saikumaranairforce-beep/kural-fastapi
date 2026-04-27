@@ -65,7 +65,7 @@ def home():
     return {"message": "Tamil Kural API running"}
 
 # 🔑 Create API key
-@app.post("/create-api-key")
+@app.get("/create-api-key")
 def create_api_key():
     supabase = get_supabase()
 
