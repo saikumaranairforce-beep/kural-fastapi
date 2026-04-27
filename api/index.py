@@ -19,8 +19,9 @@ def get_supabase():
     return create_client(url, key)
 
 # ✅ Load JSON (fix for Vercel)
-BASE_DIR = os.path.dirname(__file__)
-file_path = os.path.join(BASE_DIR, "../data/kurals.json")
+file_path = os.path.join(os.path.dirname(__file__), "kurals.json")
+#BASE_DIR = os.path.dirname(__file__),"kurals.json")
+#file_path = os.path.join(BASE_DIR, "../data/kurals.json")
 
 with open(file_path, "r", encoding="utf-8") as f:
     kurals = json.load(f)
@@ -63,6 +64,13 @@ def validate_api_key(api_key: str):
 @app.get("/")
 def home():
     return {"message": "Tamil Kural API running"}
+@app.get("/debug")
+def debug():
+    try:
+        supabase = get_supabase()
+        return {"status": "ok"}
+    except Exception as e:
+        return {"error": str(e)}
 
 # 🔑 Create API key
 @app.get("/create-api-key")
@@ -70,6 +78,7 @@ def create_api_key():
     supabase = get_supabase()
 
     key = generate_api_key()
+
 
     supabase.table("api_keys").insert({
         "api_key": key,
