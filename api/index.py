@@ -52,6 +52,9 @@ try:
 except FileNotFoundError:
     kurals = []
     print(f"[WARNING] kurals.json not found at {file_path}")
+@app.get("/hello")
+def hello():
+    return {"message": "hello working"}
 
 # ─── Helpers ─────────────────────────────────────────────────────────────────
 def generate_api_key():
