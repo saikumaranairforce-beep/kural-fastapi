@@ -1,5 +1,4 @@
 from fastapi import FastAPI, HTTPException, Query
-from fastapi.middleware.cors import CORSMiddleware
 from supabase import create_client
 from datetime import datetime
 import random
@@ -7,37 +6,21 @@ import json
 import os
 import secrets
 
-# 🚀 Create app
 app = FastAPI()
 
-# 🌐 CORS (important for frontend)
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# 🔗 Supabase setup (PUT YOUR VALUES)
-SUPABASE_URL = os.getenv("https://zawftoslsjbptffmtwpb.supabase.co")
-SUPABASE_KEY = os.getenv("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inphd2Z0b3Nsc2picHRmZm10d3BiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcxNzUyOTQsImV4cCI6MjA5Mjc1MTI5NH0.0BBcsCCgewtd3GeZ27VsxqvHxqMqL9O9PQbFMnMEFR4")
-
-@app.get("/hello")
-def hello():
-    return {"message": "hello working"}
-#supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+# ✅ Supabase connection
 def get_supabase():
     url = os.getenv("SUPABASE_URL")
     key = os.getenv("SUPABASE_KEY")
 
     if not url or not key:
-        raise Exception("Missing Supabase environment variables")
+        raise Exception("Missing Supabase ENV")
 
     return create_client(url, key)
-# 📂 Load JSON data
-BASE_DIR = os.path.dirname(os.path.dirname(__file__))
-file_path = os.path.join(BASE_DIR, "kurals.json")
+
+# ✅ Load JSON (fix for Vercel)
+BASE_DIR = os.path.dirname(__file__)
+file_path = os.path.join(BASE_DIR, "../data/kurals.json")
 
 with open(file_path, "r", encoding="utf-8") as f:
     kurals = json.load(f)
@@ -46,16 +29,18 @@ with open(file_path, "r", encoding="utf-8") as f:
 def generate_api_key():
     return secrets.token_urlsafe(32)
 
-# ✅ Validate API key + usage
+# ✅ Validate API key
 def validate_api_key(api_key: str):
-    response = supabase.table("api_keys").select("*").eq("api_key", api_key).execute()
+    supabase = get_supabase()
 
-    if not response.data:
+    res = supabase.table("api_keys").select("*").eq("api_key", api_key).execute()
+
+    if not res.data:
         raise HTTPException(status_code=401, detail="Invalid API Key")
 
-    user = response.data[0]
+    user = res.data[0]
 
-    # 🔄 Daily reset
+    # daily reset
     today = datetime.utcnow().date()
     last_reset = datetime.fromisoformat(user["last_reset"]).date()
 
@@ -64,127 +49,55 @@ def validate_api_key(api_key: str):
             "usage_count": 0,
             "last_reset": str(today)
         }).eq("api_key", api_key).execute()
+
         user["usage_count"] = 0
 
-    # 🚫 Limit check
     if user["usage_count"] >= user["limit_per_day"]:
-        raise HTTPException(status_code=429, detail="Daily limit exceeded")
+        raise HTTPException(status_code=429, detail="Limit exceeded")
 
-    # ➕ Increase usage
     supabase.table("api_keys").update({
         "usage_count": user["usage_count"] + 1
     }).eq("api_key", api_key).execute()
-
-    return user
-@app.get("/test-db")
-def test_db():
-    try:
-        supabase = get_supabase()
-        res = supabase.table("api_keys").select("*").limit(1).execute()
-        return {"status": "success", "data": res.data}
-    except Exception as e:
-        return {"status": "error", "message": str(e)}
-#@app.get("/debug-env")
-#def debug_env():
- #   return {
-  #      "url": SUPABASE_URL,
-   #     "key_exists": SUPABASE_KEY is not None }
-    
-@app.get("/test-db")
-def test_db():
-    try:
-        res = supabase.table("api_keys").select("*").limit(1).execute()
-        return {
-            "status": "success",
-            "data": res.data
-        }
-    except Exception as e:
-        return {
-            "status": "error",
-            "message": str(e)
-        }
-
-@app.get("/debug-env")
-def debug_env():
-    import os
-    return {
-        "url": os.getenv("SUPABASE_URL"),
-        "key_exists": os.getenv("SUPABASE_KEY") is not None
-    }
 
 # 🏠 Home
 @app.get("/")
 def home():
     return {"message": "Tamil Kural API running"}
 
-# ❤️ Health check
-@app.get("/health")
-def health():
-    return {"status": "ok"}
-
 # 🔑 Create API key
 @app.post("/create-api-key")
-def create_api_key(plan: str = "free"):
-    key = generate_api_key()
+def create_api_key():
+    supabase = get_supabase()
 
-    limit = 100 if plan == "free" else 1000
+    key = generate_api_key()
 
     supabase.table("api_keys").insert({
         "api_key": key,
-        "plan": plan,
-        "limit_per_day": limit,
+        "plan": "free",
+        "limit_per_day": 100,
         "usage_count": 0,
         "last_reset": str(datetime.utcnow().date())
     }).execute()
 
-    return {
-        "api_key": key,
-        "plan": plan,
-        "limit": limit
-    }
+    return {"api_key": key}
 
-# 📖 Get Kural by ID
-@app.get("/kural/{kural_id}")
-def get_kural(kural_id: int, api_key: str = Query(...)):
+# 📖 Get Kural
+@app.get("/kural/{id}")
+def get_kural(id: int, api_key: str = Query(...)):
     validate_api_key(api_key)
 
     for k in kurals:
-        if k["id"] == kural_id:
+        if k["id"] == id:
             return {
-                "id": k["id"],
-                "tamil": k.get("tamil"),
-                "meaning": k.get("meaning")
+                "line1": k["Line1"],
+                "line2": k["Line2"],
+                "meaning": k["Translation"]
             }
 
-    return {"error": "Kural not found"}
+    return {"error": "Not found"}
 
 # 🎲 Random
 @app.get("/random")
 def random_kural(api_key: str = Query(...)):
     validate_api_key(api_key)
     return random.choice(kurals)
-
-# 🔍 Search
-@app.get("/search")
-def search_kural(q: str, api_key: str = Query(...)):
-    validate_api_key(api_key)
-
-    results = [
-        k for k in kurals
-        if q.lower() in k.get("tamil", "").lower()
-        or q.lower() in k.get("meaning", "").lower()
-    ]
-
-    return {"count": len(results), "results": results}
-
-# 🧭 Filter
-@app.get("/filter")
-def filter_kural(category: str, api_key: str = Query(...)):
-    validate_api_key(api_key)
-
-    results = [
-        k for k in kurals
-        if k.get("category", "").lower() == category.lower()
-    ]
-
-    return {"count": len(results), "results": results}

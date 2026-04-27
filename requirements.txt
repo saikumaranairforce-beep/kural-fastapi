@@ -1,2 +1,4 @@
-fastapi==0.110.0
-supabase==2.4.0
+fastapi
+uvicorn
+supabase
+python-dotenv
