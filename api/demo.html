@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tamil Kural API Demo</title>
+
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #f5f5f5;
+  padding: 20px;
+  text-align: center;
+}
+
+.container {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  max-width: 500px;
+  margin: auto;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+h2 {
+  color: #333;
+}
+
+input {
+  width: 90%;
+  padding: 10px;
+  margin: 10px 0;
+}
+
+button {
+  padding: 10px 20px;
+  background: #0070f3;
+  color: white;
+  border: none;
+  border-radius: 5px;
+}
+
+.result {
+  margin-top: 20px;
+  text-align: left;
+  background: #fafafa;
+  padding: 10px;
+  border-radius: 5px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <h2>📖 Tamil Kural API</h2>
+
+  <h3>🌅 Daily Kural</h3>
+  <button onclick="getDaily()">Load Daily Kural</button>
+
+  <h3>🔐 Random Kural (API Key)</h3>
+  <input id="apikey" placeholder="Enter your API Key">
+  <br>
+  <button onclick="getRandom()">Get Random</button>
+
+  <div class="result" id="output"></div>
+</div>
+
+<script>
+const baseURL = "https://kural-fastapi-git-main-saikumaranairforce-beeps-projects.vercel.app";
+
+function show(data) {
+  document.getElementById("output").innerHTML = `
+    <p><b>${data.Line1 || data.kural?.Line1}</b></p>
+    <p>${data.Line2 || data.kural?.Line2}</p>
+    <p><i>${data.Translation || data.kural?.Translation}</i></p>
+    ${data.remaining !== undefined ? `<p>Remaining: ${data.remaining}</p>` : ""}
+  `;
+}
+
+function getDaily() {
+  fetch(baseURL + "/daily")
+    .then(res => res.json())
+    .then(show)
+    .catch(err => alert("Error loading daily kural"));
+}
+
+function getRandom() {
+  const key = document.getElementById("apikey").value;
+  if (!key) {
+    alert("Enter API key");
+    return;
+  }
+
+  fetch(baseURL + "/random?api_key=" + key)
+    .then(res => res.json())
+    .then(show)
+    .catch(err => alert("Error loading random kural"));
+}
+</script>
+
+</body>
+</html>

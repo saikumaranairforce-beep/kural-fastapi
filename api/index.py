@@ -149,3 +149,11 @@ def daily_kural():
     index = datetime.utcnow().timetuple().tm_yday % len(kurals)
 
     return kurals[index]
+#demo.html calls demoapi
+from fastapi.responses import FileResponse
+import os
+
+@app.get("/demo")
+def demo():
+    file_path = os.path.join(os.path.dirname(__file__), "demo.html")
+    return FileResponse(file_path)
