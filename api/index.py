@@ -25,6 +25,15 @@ file_path = os.path.join(os.path.dirname(__file__), "kurals.json")
 
 with open(file_path, "r", encoding="utf-8") as f:
     kurals = json.load(f)
+# test db 
+@app.get("/test-db")
+def test_db():
+    try:
+        supabase = get_supabase()
+        res = supabase.table("api_keys").select("*").limit(1).execute()
+        return {"status": "ok", "data": res.data}
+    except Exception as e:
+        return {"error": str(e)}
 
 # 🔐 Generate API key
 def generate_api_key():
