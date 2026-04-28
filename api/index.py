@@ -117,5 +117,35 @@ def get_kural(id: int, api_key: str = Query(...)):
 # 🎲 Random
 @app.get("/random")
 def random_kural(api_key: str = Query(...)):
-    validate_api_key(api_key)
-    return random.choice(kurals)
+    supabase = get_supabase()
+
+    # validate key
+    res = supabase.table("api_keys").select("*").eq("api_key", api_key).execute()
+
+    if not res.data:
+        raise HTTPException(status_code=401, detail="Invalid API Key")
+
+    user = res.data[0]
+
+    # limit check
+    if user["usage_count"] >= user["limit_per_day"]:
+        raise HTTPException(status_code=429, detail="Limit exceeded")
+
+    # increase usage
+    supabase.table("api_keys").update({
+        "usage_count": user["usage_count"] + 1
+    }).eq("api_key", api_key).execute()
+
+    # return kural + remaining
+    return {
+        "kural": random.choice(kurals),
+        "remaining": user["limit_per_day"] - user["usage_count"]
+    }
+# daily kural
+@app.get("/daily")
+def daily_kural():
+    from datetime import datetime
+
+    index = datetime.utcnow().timetuple().tm_yday % len(kurals)
+
+    return kurals[index]
