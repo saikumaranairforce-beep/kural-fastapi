@@ -1,5 +1,5 @@
-const data={
-  "kural": [
+
+ [
     {
       "id": 1,
       "Line1": "அகர முதல எழுத்தெல்லாம் ஆதி",
@@ -21280,6 +21280,4 @@ const data={
       "iyal": "கற்பியல்",
       "athikaram_tamil": "ஊடலுவகை"
     }
-  ],
-  "repo": "http://github.com/tk120404/thirukkural"
-};
+  ]
