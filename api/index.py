@@ -157,3 +157,8 @@ import os
 def demo():
     file_path = os.path.join(os.path.dirname(__file__), "demo.html")
     return FileResponse(file_path)
+    
+@app.get("/prime")
+def demo():
+    file_path = os.path.join(os.path.dirname(__file__), "prime.html")
+    return FileResponse(file_path)
