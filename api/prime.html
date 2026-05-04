@@ -81,7 +81,7 @@ function show(data) {
 function showprime(data) {
   document.getElementById("output").innerHTML = `
     <p><b>${data.Line1 || data.kural?.Line1}</b></p>
-    <p><b>${data.Line2 || data.kural?.Line2}<b></p>
+    <p><b>${data.Line2 || data.kural?.Line2}<b><i> | </i><p><b>${data.id || data.kural?.id}<b></p>
     <p><i>${data.mv || data.kural?.mv}</i></p>
     <p><i>${data.paal_tamil || data.kural?.paal_tamil}</i><i> | </i><i>${data.iyal || data.kural?.iyal}</i><i> | </i><i>${data.athikaram_tamil || data.kural?.athikaram_tamil}</i></p>
 
