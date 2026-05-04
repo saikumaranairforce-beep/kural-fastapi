@@ -144,11 +144,11 @@ def random_kural(api_key: str = Query(...)):
 # daily kural
 @app.get("/daily")
 def daily_kural():
-    from datetime import datetime
+    #from datetime import datetime
 
-    index = datetime.utcnow().timetuple().tm_yday % len(kurals)
+    #index = datetime.utcnow().timetuple().tm_yday % len(kurals)
 
-    return kurals[index]
+    return random.choice(kurals)
 #demo.html calls demoapi
 from fastapi.responses import FileResponse
 import os
@@ -157,7 +157,7 @@ import os
 def demo():
     file_path = os.path.join(os.path.dirname(__file__), "demo.html")
     return FileResponse(file_path)
-    
+
 @app.get("/prime")
 def demo():
     file_path = os.path.join(os.path.dirname(__file__), "prime.html")
